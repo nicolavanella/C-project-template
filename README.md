@@ -6,21 +6,31 @@ It features automated building and debugging workflows using CMake, GNU Make, an
 ## Project Structure
 
 ```text
-mio_progetto_c/
+## Project Structure
+```text
+my_project_c/
 ├── .vscode/
-│   ├── launch.json.in   # VS Code Debugger template
-│   ├── settings.json    # VS Code & CMake Tools workspace settings <-- ADDED
-│   └── tasks.json       # Automation tasks (build, clean)
-├── build/               # Generated build binaries (gitignored)
+│   ├── launch.json.in       # VS Code debugger template
+│   ├── settings.json        # VS Code / CMake Tools settings
+│   └── tasks.json           # VS Code automation tasks
+├── docs/
+│   ├── BUILD.md             # Build documentation
+│   └── TESTING.md           # Testing documentation
 ├── include/
-│   └── main.h           # Header files
+│   └── app.h                # Public application headers
 ├── src/
-│   └── main.c           # Source code
+│   ├── app.c                # Application logic
+│   └── main.c               # Application entry point
+├── test/
+│   ├── CMakeLists.txt       # CTest configuration
+│   └── test_app.c           # Example unit test
+├── build/                   # Generated build files (gitignored)
 ├── .gitignore
-├── CMakeLists.txt       # Main CMake configuration
-├── Makefile             # GNU Make build file (Mac/Linux)
-├── project.conf         # Centralized project configuration file
-└── README.md            # This documentation
+├── CMakeLists.txt
+├── LICENSE
+├── Makefile
+├── project.conf
+└── README.md
 ```
 
 ---
@@ -30,8 +40,33 @@ mio_progetto_c/
 Project details are centralized inside the `project.conf` file at the root directory. Both the `Makefile` and `CMakeLists.txt` parse this file dynamically.
 
 ```text
-PROJECT_NAME := my_project
-PROJECT_VER := 0.1.0
+# ----------------------------------------------------------------------
+# Project
+# ----------------------------------------------------------------------
+
+set(PROJECT_NAME myProject)
+set(PROJECT_VERSION 1.0.0)
+set(PROJECT_DESCRIPTION "A basic C project template")
+
+# ----------------------------------------------------------------------
+# Author
+# ----------------------------------------------------------------------
+
+set(PROJECT_AUTHOR "Nicola")
+set(PROJECT_YEAR 2026)
+
+# ----------------------------------------------------------------------
+# Language
+# ----------------------------------------------------------------------
+
+set(C_STANDARD 11)
+
+# ----------------------------------------------------------------------
+# Features
+# ----------------------------------------------------------------------
+
+set(ENABLE_TESTS ON)
+set(ENABLE_DOCS ON)
 ```
 
 ---

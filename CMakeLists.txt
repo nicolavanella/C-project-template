@@ -1,37 +1,59 @@
 cmake_minimum_required(VERSION 3.10)
 
-# 1. Legge il file project.conf
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/project.conf")
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/project.conf" CONF_CONTENT)
-    
-    # Estrae PROJECT_NAME tramite espressione regolare
-    string(REGEX MATCH "PROJECT_NAME *:= *([^\n\r]+)" _ "${CONF_CONTENT}")
-    set(CONF_NAME ${CMAKE_MATCH_1})
-    
-    # Estrae PROJECT_VER tramite espressione regolare
-    string(REGEX MATCH "PROJECT_VER *:= *([^\n\r]+)" _ "${CONF_CONTENT}")
-    set(CONF_VER ${CMAKE_MATCH_1})
-else()
-    message(FATAL_ERROR "File project.conf non trovato!")
-endif()
+# ----------------------------------------------------------------------
+# Project configuration
+# ----------------------------------------------------------------------
 
-# 2. Definisce il progetto usando le variabili lette
-project(${CONF_NAME} VERSION ${CONF_VER} LANGUAGES C)
+include(${CMAKE_CURRENT_SOURCE_DIR}/project.conf)
 
-message(STATUS "Configurazione CMake per ${PROJECT_NAME} (Versione: ${PROJECT_VERSION})")
+project(
+    ${PROJECT_NAME}
+    VERSION ${PROJECT_VERSION}
+    DESCRIPTION "${PROJECT_DESCRIPTION}"
+    LANGUAGES C
+)
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C)
 
-file(GLOB SOURCES "src/*.c")
-
-# Genera l'eseguibile usando il nome dinamico
-add_executable(${PROJECT_NAME} ${SOURCES})
-
-target_include_directories(${PROJECT_NAME} PRIVATE include)
+message(STATUS "CMake configuration for ${PROJECT_NAME} (Ver: ${PROJECT_VERSION})")
 
 # ----------------------------------------------------------------------
-# Configurazione Automatica di launch.json per VS Code
+# Compiler configuration
+# ----------------------------------------------------------------------
+
+set(CMAKE_C_STANDARD ${C_STANDARD})
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+# ----------------------------------------------------------------------
+# Application library
+# ----------------------------------------------------------------------
+
+add_library(${PROJECT_NAME}_lib STATIC
+    src/app.c
+)
+
+target_include_directories(${PROJECT_NAME}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# ----------------------------------------------------------------------
+# Application executable
+# ----------------------------------------------------------------------
+
+add_executable(${PROJECT_NAME} src/main.c)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_lib)
+
+# ----------------------------------------------------------------------
+# Testing
+# ----------------------------------------------------------------------
+
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
+# ----------------------------------------------------------------------
+# VS Code Debugger configuration
 # ----------------------------------------------------------------------
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -43,8 +65,7 @@ if(MSVC)
     set(EXECUTABLE_PATH "\${workspaceFolder}/build/${CMAKE_BUILD_TYPE}/${PROJECT_NAME}.exe")
 else()
     set(DEBUGGER_TYPE "cppdbg")
-    # MinGW/GCC mette l'eseguibile direttamente nella radice di build/
-    set(EXECUTABLE_PATH "\${workspaceFolder}/build/${PROJECT_NAME}.exe")
+    set(EXECUTABLE_PATH "\${workspaceFolder}/build/${PROJECT_NAME}")
 endif()
 
 configure_file(
@@ -52,6 +73,3 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/.vscode/launch.json"
     @ONLY
 )
-
-
-
