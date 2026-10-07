@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Windows) C Debug Generato",
+            "type": "@DEBUGGER_TYPE@",
+            "request": "launch",
+            "program": "@EXECUTABLE_PATH@",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        }
+    ]
+}

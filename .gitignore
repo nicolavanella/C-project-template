@@ -1,17 +1,22 @@
-# Cartella di build e file binari
+# Build directories
 build/
 bin/
 obj/
 
-# File di configurazione IDE locali
-.vscode/
-.idea/
-*.cmake
+# CMake generated files
 CMakeCache.txt
 CMakeFiles/
-Makefile.cmake
 cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+*.cmake
 
-# File di sistema
+# VS Code generated files
+.vscode/launch.json
+
+# IDE files
+.idea/
+
+# OS files
 .DS_Store
 Thumbs.db

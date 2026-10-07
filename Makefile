@@ -1,77 +1,79 @@
-include project.conf
+# ----------------------------------------------------------------------
+# Project
+# ----------------------------------------------------------------------
+BUILD_DIR := build
+CONFIG ?= Debug
 
-CC = gcc
-CFLAGS = -Wall -Wextra -Iinclude -std=c11
+# ----------------------------------------------------------------------
+# Tools
+# ----------------------------------------------------------------------
+CMAKE := cmake
+CTEST := ctest
 
-SRC_DIR = src
-TEST_DIR = test
-BUILD_DIR = build
-
+# ----------------------------------------------------------------------
+# Platform
+# ----------------------------------------------------------------------
 ifeq ($(OS),Windows_NT)
-    TARGET = $(BUILD_DIR)/$(PROJECT_NAME).exe
-    TEST_TARGET = $(BUILD_DIR)/$(PROJECT_NAME)_test.exe
-
-    RM = del /Q /F
-    RMDIR = rmdir /S /Q
-    MKDIR = if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+    RM := rmdir /S /Q
+    CMAKE_BUILD_CONFIG := --config $(CONFIG)
+    CTEST_CONFIG := -C $(CONFIG)
 else
-    TARGET = $(BUILD_DIR)/$(PROJECT_NAME)
-    TEST_TARGET = $(BUILD_DIR)/$(PROJECT_NAME)_test
-
-    RM = rm -f
-    RMDIR = rm -rf
-    MKDIR = mkdir -p $(BUILD_DIR)
+    RM := rm -rf
+    CMAKE_BUILD_CONFIG :=
+    CTEST_CONFIG :=
 endif
-
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-APP_SRCS = $(filter-out $(SRC_DIR)/main.c,$(SRCS))
-APP_OBJS = $(APP_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
-MAIN_OBJ = $(BUILD_DIR)/main.o
-TEST_OBJ = $(BUILD_DIR)/test_app.o
 
 # ----------------------------------------------------------------------
 # Default target
 # ----------------------------------------------------------------------
-
-all: $(TARGET)
-
-# ----------------------------------------------------------------------
-# Application
-# ----------------------------------------------------------------------
-
-$(TARGET): $(APP_OBJS) $(MAIN_OBJ)
-	@$(MKDIR)
-	$(CC) $(CFLAGS) $^ -o $@
-
-$(BUILD_DIR)/main.o: $(SRC_DIR)/main.c
-	@$(MKDIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@$(MKDIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+.PHONY: all
+all: build
 
 # ----------------------------------------------------------------------
-# Tests
+# Configure
 # ----------------------------------------------------------------------
+.PHONY: configure
+configure:
+	$(CMAKE) -B $(BUILD_DIR) -S .
 
-test: $(TEST_TARGET)
-	@$(TEST_TARGET)
+# ----------------------------------------------------------------------
+# Build
+# ----------------------------------------------------------------------
+.PHONY: build
+build: configure
+	$(CMAKE) --build $(BUILD_DIR) $(CMAKE_BUILD_CONFIG)
 
-$(TEST_TARGET): $(APP_OBJS) $(TEST_OBJ)
-	@$(MKDIR)
-	$(CC) $(CFLAGS) $^ -o $@
-
-$(BUILD_DIR)/test_app.o: $(TEST_DIR)/test_app.c
-	@$(MKDIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+# ----------------------------------------------------------------------
+# Test
+# ----------------------------------------------------------------------
+.PHONY: test
+test: build
+	$(CTEST) --test-dir $(BUILD_DIR) $(CTEST_CONFIG) --output-on-failure
 
 # ----------------------------------------------------------------------
 # Clean
 # ----------------------------------------------------------------------
-
+.PHONY: clean
 clean:
-	@echo "Pulizia della cartella di build in corso..."
-	@$(RMDIR) $(BUILD_DIR)
+	$(RM) $(BUILD_DIR)
 
-.PHONY: all test clean
+# ----------------------------------------------------------------------
+# Rebuild
+# ----------------------------------------------------------------------
+.PHONY: rebuild
+rebuild: clean build
+
+# ----------------------------------------------------------------------
+# Help
+# ----------------------------------------------------------------------
+.PHONY: help
+help:
+	@echo "Available targets:"
+	@echo "  make configure              Configure the CMake project"
+	@echo "  make build                  Build the project"
+	@echo "  make test                   Build and run tests"
+	@echo "  make clean                  Remove the build directory"
+	@echo "  make rebuild                Clean and build the project"
+	@echo "  make build CONFIG=Release   Build Release configuration"
+	@echo "  make test CONFIG=Release    Test Release configuration"
+	@echo "  make help                   Show this help"
